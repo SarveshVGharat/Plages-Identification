@@ -4,4 +4,8 @@ Solar Plages are bright chromospheric features observed in Ca II K photographic 
 
 # Results
 
+
 ![image](./scatter.png)
+
+
+![image_2](./time_series.png)
