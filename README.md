@@ -17,3 +17,10 @@ Solar Plages are bright chromospheric features observed in Ca II K photographic 
 # Images
 
 Head over to [this link](https://drive.google.com/drive/folders/1nMKew8hG8Eo6Ej1jSz7uSgyiW4C4AzGK?usp=share_link) for input and output images
+
+
+# Web App Demo
+
+
+![](./demo.gif)
+
