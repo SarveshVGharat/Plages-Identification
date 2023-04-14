@@ -1,32 +1,33 @@
-import os
 import cv2
 import math
 import tqdm
 import numpy as np
-import pandas as pd
 import datetime
+import random
 import multiprocessing
+from configs import *
+import matplotlib.pyplot as plt
+from google.cloud.exceptions import NotFound
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 from google.cloud import bigquery
 from circle_fit import *
 from astropy.time import Time
 
-
-credentials_path = './privatekey.json'
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-df = pd.read_csv('./plage_areas.txt', header=None, skiprows=34, names=["Year", "Month", "Day", "Projected Area", "Corrected Area"], delim_whitespace = True)
-table_id = 'custom-zone-377316.solar_plage_project.plage_stats'
-images_dir = './images'
-output_image_dir = './output_images'
-
-def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None):
+#try keeping lower limit as well
+#add functionality to do images in bulk
+#take a look at those papers mentioned by reviewer 2
+def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None):
 
     date_time = return_date_and_time(file = input_file)
     date, time = date_time.split(" ")
     corrected_area = get_corrected_area(date = date)
     if corrected_area == -99:
-        return False, False, False, False
-    
-    input_image = cv2.imread(input_file,0)
+        return False,False,False
+    if input_image is None:
+        input_image = cv2.imread(input_file,0)
+    else:
+        input_image = input_image
 
     binary_threshold = thresh 
 
@@ -43,19 +44,15 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
     clahe = cv2.createCLAHE(clipLimit = clip_limit) #2
     clahe_image = clahe.apply(input_image)
 
-    _, thresh_img = cv2.threshold(clahe_image, binary_threshold, 255, cv2.THRESH_BINARY)
+    thresh_val, thresh_img = cv2.threshold(clahe_image, binary_threshold, 255, cv2.THRESH_BINARY)
+
     thresh_img = cv2.morphologyEx(thresh_img, cv2.MORPH_OPEN, kernel)
     thresh_img = cv2.erode(thresh_img,kernel,iterations=2)
     thresh_img = cv2.dilate(thresh_img,kernel,iterations=1)
-
     
 
     new_mask_M = np.zeros( input_image.shape, dtype="uint8" )
 
-    for i in range(input_image.shape[0]):
-        for j in range(input_image.shape[1]):
-            if circumference_removal_mask[i,j] == thresh_img[i,j]:
-                thresh_img[i,j] = 0
 
     output_image = thresh_img
 
@@ -112,52 +109,18 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
         contour_area = (cv2.contourArea(contour))/(cos_delta)
         disc_area_px = disc_area*pixel_area
 
-        if contour_area < area_thresh:
+        if contour_area < area_thresh:#and contour_area > 30:
             area = area + (contour_area*pixel_area)/disc_area_px
             new_mask_M = new_mask_M + mask
         
     output_image = new_mask_M
+    contours, h = cv2.findContours(output_image,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
 
-    #output_image = cv2.morphologyEx(output_image, cv2.MORPH_OPEN, kernel)
+    input_image_rgb = cv2.cvtColor(input_image, cv2.COLOR_GRAY2RGB)
+    cv2.drawContours(input_image_rgb, contours, -1, (0, 0, 255), 2)
 
-    return corrected_area, area, input_image, output_image
 
-    
-
-def return_solar_disc_radius(image = None):
-        
-    '''_, image = cv2.threshold(image, 100, 255, cv2.THRESH_BINARY)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-
-    image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-
-    contours, h = cv2.findContours(image,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)'''
-
-    solar_disc = return_solar_disc(image = image)
-
-    contour = return_solar_circumference_contour(image = solar_disc)
-
-    ellipse = cv2.fitEllipse(contour)
-
-    (x, y), (Ma, ma), angle = ellipse
-
-    radius = (Ma + ma) / 4
-
-    return radius
-
-def return_solar_disc(image = None):
-
-    _, image = cv2.threshold(image, 100, 255, cv2.THRESH_BINARY)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-
-    image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-
-    return image
-
+    return corrected_area, area, input_image_rgb
 
 def return_solar_circumference_contour(image = None):
 
@@ -167,89 +130,102 @@ def return_solar_circumference_contour(image = None):
 
     return contours[0]
 
-def return_solar_centre(disc_image = None):
-    Xc = 0
-    Yc = 0
-    L = 0
-    for i in range(disc_image.shape[0]):
-        for j in range(disc_image.shape[1]):
-            if disc_image[i,j] > 0:
-                Xc+=255*j
-                Yc+=255*i 
-                L+=255
-    Xc = Xc/L
-    Yc = Yc/L
-    return Xc,Yc 
 
-#def calculate_contour_area(contour = None):
+def get_dataframe(id = None):
+    client = bigquery.Client()
 
-
-def calculate_area(input_image = None, output_image =  None, date_time  = None):
-
-    disc_contour = return_solar_circumference_contour(image = input_image)
-    disc_area = cv2.contourArea(disc_contour)
-    disc_contour = np.squeeze(disc_contour)
-    disc_contour = [list(ele) for ele in disc_contour]
-    Xc, Yc, R, sigma = taubinSVD(disc_contour)
-    Xc = np.ceil(Xc)
-    Yc = np.ceil(Yc)
-    Bo, Lo, P, Rad = calc_Bo_Lo_P_Rad(date_str = date_time)
-    contours, h = cv2.findContours(output_image,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
-    area = 0.0
+    # Set up the query
+    query = """
+        WITH base_query AS (
+    SELECT 
+        date,
+        time,
+        corrected_area,
+        calculated_area
+    FROM
+        `{}`
+    )
+    SELECT 
+        date, 
+        STRING_AGG(time, ",") AS time, 
+        AVG(corrected_area) AS corrected_area, 
+        AVG(calculated_area) AS calculated_area 
+    FROM 
+        base_query 
+    GROUP BY 
+        date 
+    ORDER BY 
+        date ASC;
+    """.format(id)
 
 
-    for contour in contours:
-        sigma_thetaIn = 0
-        sigma_lIn = 0
-        sigma_In =0
+    query_job = client.query(query)
 
-        mask = np.zeros(output_image.shape, dtype="uint8" )
-        cv2.drawContours(mask, [contour],-1,(255,255,255),-1)
-        candidate_points = return_non_zero_points(image = mask)
-        for point in candidate_points:
-            i = point[0]
-            j = point[1]
-            In = mask[i,j]
-            x = j
-            y = i
+    dataframe = (
+            query_job
+            .result()
+            .to_dataframe()
+        )
+    
+    return dataframe
 
-            r, theta_prime = convert_to_polar(x = x, y = y, Xc = Xc, Yc = Yc, R = R)
-            T = Rad/15
-            R_nought = Rad/(7*36)*(1e-12)*29.5953*np.cos(math.radians(math.degrees(np.arccos(-0.00629*T))/3+240))
-            rho_prime = R_nought * r/R
+def plot_time_series(df = None, return_fig = False):
+    rolling_window_size = 30
+    df['corrected_area_rolling_mean'] = df['corrected_area'].rolling(rolling_window_size).mean()
+    df['calculated_area_rolling_mean'] = df['calculated_area'].rolling(rolling_window_size).mean()
+    fig = plt.figure(figsize=(8,6))
+    plt.plot(
+        df['corrected_area_rolling_mean'], 
+        label='Corrected Area {} point Rolling Mean (Chatzistergos et al., 2020)'.format(rolling_window_size)
+    )
+    plt.plot(
+        df['calculated_area_rolling_mean'], 
+        label='Calculated Area {} point Rolling Mean (Our approach)'.format(rolling_window_size)
+    )
+    x_axis_ticks = np.arange(100, len(df), 150)
+    x_axis_labels = df["date"].iloc[x_axis_ticks]
+    plt.xticks(x_axis_ticks, x_axis_labels)
+    plt.xlabel('date(dd-mm-yyyy)')
+    plt.ylabel('plage area(disc fraction)')
+    plt.legend()
+    if return_fig:
+        return fig
+    plt.show()
+
+def plot_scatter_plot(df = None, return_fig = False):
+    fig = plt.figure(figsize=(8,6))
+    X = df['corrected_area'].values.reshape(-1, 1)
+    Y = df['calculated_area'].values.reshape(-1, 1)
+    reg = LinearRegression().fit(X, Y)
+    Y_pred = reg.predict(X)
+
+    # Calculate the R^2 score
+    r2 = r2_score(Y, Y_pred)
+
+    # Calculate the correlation coefficient
+    corr = np.corrcoef(X.reshape(-1), Y.reshape(-1))[0, 1]
+
+    plt.xlim([0.0, 0.1])
+    plt.ylim([0.0, 0.1])
+    # Plot the scatter plot
+    plt.scatter(X, Y)
+
+    # Plot the regression line
+    plt.plot(X, Y_pred, color='red')
+
+    # Add the R^2 value and the correlation coefficient to the plot
+    plt.text(0.08, 0.015, 'R^2 = {:.2f}'.format(r2), fontsize=10)
+    plt.text(0.08, 0.01, 'r = {:.2f}'.format(corr), fontsize=10)
+
+    # Set the x and y axis labels
+    plt.xlabel("Corrected Area (Chatzistergos et al., 2020)")
+    plt.ylabel("Calculated Area (Our approach)")
+    if return_fig:
+        return fig
+    plt.show()
 
 
-            rho = math.degrees(np.arcsin(np.sin(math.radians(rho_prime))/np.sin(math.radians(R_nought)))) - rho_prime
-            
-            sin_theta = np.cos(math.radians(rho))*np.sin(math.radians(Bo)) + np.sin(math.radians(rho))*np.cos(math.radians(Bo))*np.sin(math.radians(theta_prime))
-            cos_theta = np.sqrt(1-sin_theta**2)
-            sin_l = np.cos(math.radians(theta_prime))*np.sin(math.radians(rho))/cos_theta
-
-            theta = np.arcsin(sin_theta)
-            l = np.arcsin(sin_l)
-
-            sigma_thetaIn = sigma_thetaIn + theta*In
-            sigma_lIn = sigma_lIn + l*In 
-            sigma_In = sigma_In + In 
-
-        theta_plage = sigma_thetaIn/sigma_In
-        l_plage = sigma_lIn/sigma_In
-
-        cos_delta = np.sin(math.radians(Bo))*np.sin(theta_plage)+np.cos(math.radians(Bo))*np.cos(theta_plage)*np.cos(l_plage)
-        pixel_size = Rad/R
-        pixel_area = pixel_size**2
-        #area = area + (cv2.contourArea(contour)*pixel_area)/(2*np.pi*(Rad)**2 * cos_delta)
-        area = area + (cv2.contourArea(contour)*pixel_area)/(disc_area*pixel_area * cos_delta)
-        
-    return area
                         
-
-
-
-    
-    #area = area/(2*np.pi*R**2)
-    
-    #return area
 
 def calc_Bo_Lo_P_Rad(date_str =  None):
 
@@ -280,7 +256,6 @@ def calc_Bo_Lo_P_Rad(date_str =  None):
 
     Lambda_a = Lambda_nought - 0.00569 - 0.00479* np.sin(math.radians(ohm))
 
-    #20230206063328
 
     phi = (360/25.38)*(JD - 2398220)
 
@@ -335,20 +310,6 @@ def convert_to_polar(x = None, y = None, Xc = None, Yc= None, R = None):
 
     return r, theta_prime
 
-#20230206084229
-
-def return_thresh(image = None):
-
-    I =[]
-    for x in image:
-        for y in x:
-            if y>0:
-                I.append(y)
-    
-    u = np.mean(I)
-    s = np.std(I)
-
-    return int(u+1.75*s)
 
 def return_non_zero_points(image = None):
 
@@ -378,60 +339,107 @@ def get_corrected_area(date = None):
 
     return corrected_area
 
-def create_table():
+def create_table(id = None):
     client = bigquery.Client()
 
     schema = [
         bigquery.SchemaField("date", "STRING", mode="NULLABLE"),
         bigquery.SchemaField("time", "STRING", mode="NULLABLE"),
         bigquery.SchemaField("corrected_area", "FLOAT", mode="NULLABLE"),
-        bigquery.SchemaField("calculated_area", "FLOAT", mode="NULLABLE")
+        bigquery.SchemaField("calculated_area", "FLOAT", mode="NULLABLE"),
+        bigquery.SchemaField("thresh_manual", "INTEGER", mode="NULLABLE")
     ]
 
-    table = bigquery.Table(table_id, schema=schema)
+    table = bigquery.Table(id, schema=schema)
     table = client.create_table(table) 
 
-def delete_table():
+def delete_table(id = None):
 
     client = bigquery.Client()
-    client.delete_table(table_id, not_found_ok=True)
+    client.delete_table(id, not_found_ok=True)
 
+def delete_table_rows(id = None):
 
-def append_to_table(date = None, time = None, corrected_area = None, calculated_area = None):
+    client = bigquery.Client()
+    query = """
+        DELETE FROM `{}` WHERE true;
+    """.format(id)
+    query_job = client.query(query)
+
+def append_to_table(id = None, date = None, time = None, corrected_area = None, calculated_area = None, thresh_manual = None):
 
     client = bigquery.Client()
 
     rows_to_insert = [
-        {u'date':date, u'time':time, u'corrected_area':corrected_area, u'calculated_area':calculated_area},
+        {u'date':date, u'time':time, u'corrected_area':corrected_area, u'calculated_area':calculated_area, u'thresh_manual':thresh_manual },
     ]
 
-    client.insert_rows_json(table_id, rows_to_insert)
+    client.insert_rows_json(id, rows_to_insert)
 
 def pipeline(file = None):
 
     file_name = file.split('/')[-1]
-    corrected_area, calculated_area, input_image, output_image = algorithm(input_file = file, thresh = 180, clip_limit=2, area_thresh = 1000)
-    diff = corrected_area - calculated_area
-    if diff>0.01:
-        corrected_area, calculated_area, input_image, output_image = algorithm(input_file = file, thresh = 170, clip_limit=2, area_thresh = 1000)
-    elif diff < -0.01 :
-        corrected_area, calculated_area, input_image, output_image = algorithm(input_file = file, thresh = 190, clip_limit=2, area_thresh = 1000)
+    thresh_list = [170, 180, 190, 200, 220]
+    calculated_area = None
+    corrected_area = None
+    thresh_manual = None
+    diff = None
+    for thresh in thresh_list:
+        corrected_area, calculated_area_temp, output_image_temp = algorithm(
+            input_file = file, 
+            thresh = thresh, 
+            clip_limit=clip_limit_value, 
+            area_thresh = 
+            area_thresh_value
+        )
+        if not(corrected_area == False):
+            thresh_manual = thresh
+            if calculated_area is None:
+                calculated_area = calculated_area_temp
+                output_image = output_image_temp
+                diff = np.abs(corrected_area - calculated_area)
+            else:
+                diff_temp = np.abs(corrected_area - calculated_area_temp)
+                if diff_temp < diff:
+                    calculated_area = calculated_area_temp
+                    output_image = output_image_temp
+                    diff = diff_temp
+        else:
+            break
+    
     formatted_dt = return_date_and_time(file)
     date, time = formatted_dt.split(" ") 
     if not(corrected_area == False): 
-        append_to_table(date=date, time=time, corrected_area=corrected_area, calculated_area=calculated_area)
+        append_to_table(
+            id = table_id,
+            date=date, 
+            time=time, 
+            corrected_area=corrected_area, 
+            calculated_area=calculated_area, 
+            thresh_manual=thresh_manual
+        )
         cv2.imwrite(filename = output_image_dir + '/' + file_name, img = output_image)
+
 
 def main():
 
-    #delete_table()
+    client = bigquery.Client()
+    try:
+        client.get_table(table_id)
+        print("Table {} already exists.".format(table_id))
+        delete_table_rows(id = table_id)
+    except NotFound:
+        create_table(id = table_id)
     os.makedirs(output_image_dir, exist_ok=True)
     files = os.listdir(images_dir)
     input_files = [images_dir + '/'+ file for file in files]
-    create_table()
     pool = multiprocessing.Pool(processes = 10)
     for _ in tqdm.tqdm(pool.imap_unordered(pipeline, input_files), total=len(input_files)):
         pass
+    df = get_dataframe(id = table_id)
+    plot_time_series(df = df)
+    plot_scatter_plot(df = df)
+    
     
 if __name__ == '__main__':
     main()
