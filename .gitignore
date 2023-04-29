@@ -2,6 +2,7 @@ privatekey.json
 output_images/
 algo.docx
 demo.mp4
+demo-deployed.mp4
 area_stats.csv
 thresh_values.csv
 time_series.csv
