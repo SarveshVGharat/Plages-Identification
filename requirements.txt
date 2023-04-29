@@ -4,7 +4,7 @@ matplotlib==3.5.2
 numpy==1.21.5
 opencv_python==4.6.0.66
 pandas==1.4.4
-protobuf==4.22.3
+protobuf
 scikit_learn==1.2.2
 streamlit==1.14.0
 tqdm==4.64.1
