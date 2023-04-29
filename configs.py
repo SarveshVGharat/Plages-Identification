@@ -5,7 +5,7 @@ import pandas as pd
 #credentials_path = service_account.Credentials.from_service_account_info(
 #    st.secrets["gcp_service_account"]
 #)
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets["gcp_service_account"]
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(st.secrets["gcp_service_account"])
 df = pd.read_csv('./plage_areas.txt', header=None, skiprows=34, names=["Year", "Month", "Day", "Projected Area", "Corrected Area"], delim_whitespace = True)
 project_id = 'custom-zone-377316.solar_plage_project'
 cycle_id = 16
