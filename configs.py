@@ -1,6 +1,10 @@
 import os
+import streamlit as st
+from google.oauth2 import service_account
 import pandas as pd
-credentials_path = './privatekey.json'
+credentials_path = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 df = pd.read_csv('./plage_areas.txt', header=None, skiprows=34, names=["Year", "Month", "Day", "Projected Area", "Corrected Area"], delim_whitespace = True)
 project_id = 'custom-zone-377316.solar_plage_project'
