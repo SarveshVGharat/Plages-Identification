@@ -32,7 +32,9 @@ def page1():
     thresh = st.slider('Binary Threshold', 0, 255, 170)
 
     # Define the area threshold slider
-    area_thresh = st.slider('Area Threshold', 0, 10000, 1000)
+    area_thresh = st.slider('Upper Area Threshold', 0, 10000, 1000)
+
+    lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, 100)
 
     # Define the clip limit slider
     clip_limit = st.slider('Clip Limit', 0.0, 10.0, 2.0)
@@ -46,7 +48,7 @@ def page1():
         img = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 0)
 
         # Call the algorithm function to segment the image
-        corrected_area, calculated_area, output_image = algorithm(input_file = file_name, thresh = thresh,clip_limit=clip_limit, area_thresh=area_thresh, input_image=img)
+        corrected_area, calculated_area, output_image = algorithm(input_file = file_name, thresh = thresh,clip_limit=clip_limit, area_thresh=area_thresh, input_image=img, lower_area_thresh=lower_area_thresh)
 
         # Display the results
         display_results(img, output_image, corrected_area, calculated_area)

@@ -5,10 +5,13 @@ Solar Plages are bright chromospheric features observed in Ca II K photographic 
 # Sample Results
 
 
-![](./scatter_20.png)
+## Solar Cycle 21:
 
 
-![](./time_series_20.png)
+![](./scatter_21.png)
+
+
+![](./time_series_21.png)
 
 
 [See notebook for detailed results](./demo.ipynb)

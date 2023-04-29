@@ -17,7 +17,7 @@ from astropy.time import Time
 #try keeping lower limit as well
 #add functionality to do images in bulk
 #take a look at those papers mentioned by reviewer 2
-def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None):
+def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None, lower_area_thresh = None):
 
     date_time = return_date_and_time(file = input_file)
     date, time = date_time.split(" ")
@@ -29,15 +29,19 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
     else:
         input_image = input_image
 
+    crop_size = 500
+    padding = int((800-crop_size)/2)
+
+    input_image = center_crop(input_image, crop_size, crop_size)
+
+    input_image = cv2.copyMakeBorder(input_image,padding,padding,padding,padding,cv2.BORDER_CONSTANT,value=0)
+
     binary_threshold = thresh 
 
     disc_contour = return_solar_circumference_contour(image = input_image)
 
     disc_area = cv2.contourArea(disc_contour)
 
-    circumference_removal_mask = np.zeros(input_image.shape, dtype="uint8")
-
-    cv2.drawContours(circumference_removal_mask, disc_contour, -1, (255,255,255), thickness = 15)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 
@@ -109,9 +113,10 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
         contour_area = (cv2.contourArea(contour))/(cos_delta)
         disc_area_px = disc_area*pixel_area
 
-        if contour_area < area_thresh:#and contour_area > 30:
-            area = area + (contour_area*pixel_area)/disc_area_px
-            new_mask_M = new_mask_M + mask
+        if contour_area < area_thresh: 
+            if (lower_area_thresh is not None and contour_area > lower_area_thresh) or lower_area_thresh is None:
+                area = area + (contour_area*pixel_area)/disc_area_px
+                new_mask_M = new_mask_M + mask
         
     output_image = new_mask_M
     contours, h = cv2.findContours(output_image,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
@@ -119,7 +124,7 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
     input_image_rgb = cv2.cvtColor(input_image, cv2.COLOR_GRAY2RGB)
     cv2.drawContours(input_image_rgb, contours, -1, (0, 0, 255), 2)
 
-
+    #input_image_rgb = input_image = cv2.copyMakeBorder(input_image_rgb,padding,padding,padding,padding,cv2.BORDER_CONSTANT,value=0)
     return corrected_area, area, input_image_rgb
 
 def return_solar_circumference_contour(image = None):
@@ -129,6 +134,13 @@ def return_solar_circumference_contour(image = None):
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
     return contours[0]
+
+def center_crop(image, new_height, new_width):
+  height, width = image.shape[:2]
+  start_row = (height - new_height) // 2
+  start_col = (width - new_width) // 2
+  cropped_image = image[start_row:start_row+new_height, start_col:start_col+new_width]
+  return cropped_image
 
 
 def get_dataframe(id = None):
@@ -389,8 +401,8 @@ def pipeline(file = None):
             input_file = file, 
             thresh = thresh, 
             clip_limit=clip_limit_value, 
-            area_thresh = 
-            area_thresh_value
+            area_thresh = area_thresh_value,
+            lower_area_thresh=lower_area_thresh_value
         )
         if not(corrected_area == False):
             thresh_manual = thresh
@@ -433,7 +445,7 @@ def main():
     os.makedirs(output_image_dir, exist_ok=True)
     files = os.listdir(images_dir)
     input_files = [images_dir + '/'+ file for file in files]
-    pool = multiprocessing.Pool(processes = 10)
+    pool = multiprocessing.Pool(processes = 11)
     for _ in tqdm.tqdm(pool.imap_unordered(pipeline, input_files), total=len(input_files)):
         pass
     df = get_dataframe(id = table_id)
