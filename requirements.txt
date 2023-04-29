@@ -2,7 +2,7 @@ astropy==5.1
 circle_fit==0.2.0
 matplotlib==3.5.2
 numpy==1.21.5
-opencv_python==4.6.0.66
+opencv-python-headless==4.5.4.60
 pandas==1.4.4
 protobuf
 scikit_learn==1.2.2
