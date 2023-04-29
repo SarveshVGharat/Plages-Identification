@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 from google.cloud.exceptions import NotFound
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from google.cloud import bigquery
 from circle_fit import *
 from astropy.time import Time
 
@@ -144,7 +143,6 @@ def center_crop(image, new_height, new_width):
 
 
 def get_dataframe(id = None):
-    client = bigquery.Client()
 
     # Set up the query
     query = """
@@ -352,7 +350,6 @@ def get_corrected_area(date = None):
     return corrected_area
 
 def create_table(id = None):
-    client = bigquery.Client()
 
     schema = [
         bigquery.SchemaField("date", "STRING", mode="NULLABLE"),
@@ -367,12 +364,10 @@ def create_table(id = None):
 
 def delete_table(id = None):
 
-    client = bigquery.Client()
     client.delete_table(id, not_found_ok=True)
 
 def delete_table_rows(id = None):
 
-    client = bigquery.Client()
     query = """
         DELETE FROM `{}` WHERE true;
     """.format(id)
@@ -380,7 +375,6 @@ def delete_table_rows(id = None):
 
 def append_to_table(id = None, date = None, time = None, corrected_area = None, calculated_area = None, thresh_manual = None):
 
-    client = bigquery.Client()
 
     rows_to_insert = [
         {u'date':date, u'time':time, u'corrected_area':corrected_area, u'calculated_area':calculated_area, u'thresh_manual':thresh_manual },
@@ -435,7 +429,6 @@ def pipeline(file = None):
 
 def main():
 
-    client = bigquery.Client()
     try:
         client.get_table(table_id)
         print("Table {} already exists.".format(table_id))
