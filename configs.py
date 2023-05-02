@@ -9,7 +9,7 @@ credentials = service_account.Credentials.from_service_account_info(
 client = bigquery.Client(credentials = credentials)
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(st.secrets["gcp_service_account"])
 df = pd.read_csv('./plage_areas.txt', header=None, skiprows=34, names=["Year", "Month", "Day", "Projected Area", "Corrected Area"], delim_whitespace = True)
-project_id = 'custom-zone-377316.solar_plage_project'
+project_id = st.secrets["gcp_service_account"]["project_id"]+'.'+st.secrets["database_id"]["db_name"]
 cycle_id = 16
 images_dir_prefix = './images-cycle-'
 output_image_dir_prefix = './output-images-cycle-'
