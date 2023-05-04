@@ -23,6 +23,7 @@ def display_results(img, output_img, corrected_area, calculated_area):
 def page1():
     st.header('Image Processing Playground')
     st.write('Upload an image and adjust the parameters to segment the image.')
+    st.write('Input file name should be of the form CAK_YYYYMMDDTHHMMSS_Q1L1b800px.jpg where YYYYMMDDTHHMMSS is the date and time of the captured image in UTC+5:30.')
 
     # Upload the input image
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -47,8 +48,10 @@ def page1():
         img = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), 0)
 
         # Call the algorithm function to segment the image
-        corrected_area, calculated_area, output_image = algorithm(input_file = file_name, thresh = thresh,clip_limit=clip_limit, area_thresh=area_thresh, input_image=img, lower_area_thresh=lower_area_thresh)
+        corrected_area, calculated_area, output_image = algorithm(input_file = file_name, thresh = thresh,clip_limit=clip_limit, area_thresh=area_thresh, input_image=img, lower_area_thresh=lower_area_thresh, override=True)
 
+        if corrected_area == -99:
+            corrected_area = 'Unavailable'
         # Display the results
         display_results(img, output_image, corrected_area, calculated_area)
 

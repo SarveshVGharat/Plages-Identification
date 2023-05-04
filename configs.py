@@ -10,7 +10,7 @@ client = bigquery.Client(credentials = credentials)
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(st.secrets["gcp_service_account"])
 df = pd.read_csv('./plage_areas.txt', header=None, skiprows=34, names=["Year", "Month", "Day", "Projected Area", "Corrected Area"], delim_whitespace = True)
 project_id = st.secrets["gcp_service_account"]["project_id"]+'.'+st.secrets["database_id"]["db_name"]
-cycle_id = 16
+cycle_id = 22
 images_dir_prefix = './images-cycle-'
 output_image_dir_prefix = './output-images-cycle-'
 table_id = project_id + '.' + 'cycle-' + str(cycle_id)
@@ -21,10 +21,10 @@ area_thresh_dict = {
     22: 5000,
     21: 750,
     20: 1750,
-    19: 3000,
+    19: 5000,
     18: 1000,
     17: 5000,
-    16: 6000
+    16: 3000
 }
 area_thresh_value  = area_thresh_dict[cycle_id]
 lower_area_thresh_value = None

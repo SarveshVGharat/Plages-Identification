@@ -2,7 +2,11 @@ privatekey.json
 output_images/
 algo.docx
 demo.mp4
+demo.gif
 demo-deployed.mp4
+draft1/
+.gitignore
+.git/
 area_stats.csv
 thresh_values.csv
 time_series.csv
@@ -21,5 +25,7 @@ output-images-cycle-20/
 output-images-cycle-21/
 output-images-cycle-22/
 .streamlit/
-*.pyc
-todo.txt
+*.png
+*.ipynb
+*.md
+LICESNSE
