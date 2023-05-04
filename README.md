@@ -36,7 +36,7 @@ Head over to [this link](https://drive.google.com/drive/folders/1nMKew8hG8Eo6Ej1
 # Web App Demo
 
 
-Web App link : https://abhimanyu911-plages-identification-app-xlzu1o.streamlit.app/
+Web App link : https://abhimanyu911-plages-identification-app-yfyqbq.streamlit.app/
 
 
 ![](./demo.gif)
