@@ -1,5 +1,6 @@
 import cv2
 import math
+import time
 import tqdm
 import numpy as np
 import datetime
@@ -16,12 +17,12 @@ from astropy.time import Time
 #try keeping lower limit as well
 #add functionality to do images in bulk
 #take a look at those papers mentioned by reviewer 2
-def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None, lower_area_thresh = None):
+def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None, lower_area_thresh = None, override = False):
 
     date_time = return_date_and_time(file = input_file)
     date, time = date_time.split(" ")
     corrected_area = get_corrected_area(date = date)
-    if corrected_area == -99:
+    if corrected_area == -99 and override == False:
         return False,False,False
     if input_image is None:
         input_image = cv2.imread(input_file,0)
@@ -364,7 +365,7 @@ def create_table(id = None):
 
 def delete_table(id = None):
 
-    client.delete_table(id, not_found_ok=True)
+    client.delete_table(id, not_found_ok=False)
 
 def delete_table_rows(id = None):
 
@@ -385,7 +386,7 @@ def append_to_table(id = None, date = None, time = None, corrected_area = None, 
 def pipeline(file = None):
 
     file_name = file.split('/')[-1]
-    thresh_list = [170, 180, 190, 200, 220]
+    thresh_list = [100, 120, 140, 150, 160, 170, 180, 190, 200, 220]
     calculated_area = None
     corrected_area = None
     thresh_manual = None
@@ -431,14 +432,19 @@ def main():
 
     try:
         client.get_table(table_id)
-        print("Table {} already exists.".format(table_id))
+        print("Table {} already exists.Deleting table and recreating.".format(table_id))
+        time.sleep(60)
         delete_table_rows(id = table_id)
+        time.sleep(60)
     except NotFound:
+        print("Table {} is not found.Creating table.".format(table_id))
+        time.sleep(60)
         create_table(id = table_id)
+        time.sleep(60)
     os.makedirs(output_image_dir, exist_ok=True)
     files = os.listdir(images_dir)
     input_files = [images_dir + '/'+ file for file in files]
-    pool = multiprocessing.Pool(processes = 11)
+    pool = multiprocessing.Pool(processes = 12)
     for _ in tqdm.tqdm(pool.imap_unordered(pipeline, input_files), total=len(input_files)):
         pass
     df = get_dataframe(id = table_id)
