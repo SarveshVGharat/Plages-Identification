@@ -22,4 +22,5 @@ output-images-cycle-21/
 output-images-cycle-22/
 .streamlit/
 *.pyc
-todo.txt
+*.txt
+*.pdf
