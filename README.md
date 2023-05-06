@@ -19,10 +19,10 @@ pip install -r requirements.txt
 ## Solar Cycle 21:
 
 
-![](./scatter_21.png)
-
-
 ![](./time_series_21.png)
+
+
+![](./scatter_21.png)
 
 
 [See notebook for detailed results](./demo.ipynb)

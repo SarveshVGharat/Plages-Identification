@@ -184,20 +184,20 @@ def plot_time_series(df = None, return_fig = False):
     rolling_window_size = 30
     df['corrected_area_rolling_mean'] = df['corrected_area'].rolling(rolling_window_size).mean()
     df['calculated_area_rolling_mean'] = df['calculated_area'].rolling(rolling_window_size).mean()
-    fig = plt.figure(figsize=(8,6))
+    fig = plt.figure(figsize=(10,6))
     plt.plot(
         df['corrected_area_rolling_mean'], 
-        label='Corrected Area {} point Rolling Mean (Chatzistergos et al., 2020)'.format(rolling_window_size)
+        label='Corrected Plage Index {} point Rolling Mean (Chatzistergos et al., 2020)'.format(rolling_window_size)
     )
     plt.plot(
         df['calculated_area_rolling_mean'], 
-        label='Calculated Area {} point Rolling Mean (Our approach)'.format(rolling_window_size)
+        label='Calculated Plage Index {} point Rolling Mean (Our approach)'.format(rolling_window_size)
     )
     x_axis_ticks = np.arange(100, len(df), 150)
     x_axis_labels = df["date"].iloc[x_axis_ticks]
     plt.xticks(x_axis_ticks, x_axis_labels)
-    plt.xlabel('date(dd-mm-yyyy)')
-    plt.ylabel('plage area(disc fraction)')
+    plt.xlabel('date(yyyy-mm-dd)')
+    plt.ylabel('plage index(disc fraction)')
     plt.legend()
     if return_fig:
         return fig
@@ -229,11 +229,17 @@ def plot_scatter_plot(df = None, return_fig = False):
     plt.text(0.08, 0.01, 'r = {:.2f}'.format(corr), fontsize=10)
 
     # Set the x and y axis labels
-    plt.xlabel("Corrected Area (Chatzistergos et al., 2020)")
-    plt.ylabel("Calculated Area (Our approach)")
+    plt.xlabel("Corrected Plage Index (Chatzistergos et al., 2020)")
+    plt.ylabel("Calculated Plage Index (Our approach)")
     if return_fig:
         return fig
     plt.show()
+
+def modify_plots():
+    df = get_dataframe(id = table_id)
+    plot_time_series(df = df)
+    plot_scatter_plot(df = df)
+
 
 
                         
