@@ -65,13 +65,13 @@ def page_x(cycle = None):
     df = get_dataframe(id = table_id)
 
     st.subheader('Plot 1')
-    st.write('This plot shows the variation of calculated vs actual area of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
+    st.write('This plot shows the variation of calculated vs actual plage index of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
     fig = plot_time_series(df, return_fig=True)
     st.pyplot(fig)
 
     # Plot 2
     st.subheader('Plot 2')
-    st.write('This plot shows the scatter plot between calculated and actual area of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
+    st.write('This plot shows the scatter plot between calculated and actual plage index of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
     fig2 = plot_scatter_plot(df, return_fig=True)
     st.pyplot(fig2)
 
