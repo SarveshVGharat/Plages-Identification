@@ -29,12 +29,12 @@ def page1():
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
     # Define the threshold slider
-    thresh = st.slider('Binary Threshold', 0, 255, 170)
+    thresh = st.slider('Binary Threshold', 0, 255, default_binary_thresh)
 
     # Define the area threshold slider
-    area_thresh = st.slider('Upper Area Threshold', 0, 10000, 1000)
+    area_thresh = st.slider('Upper Area Threshold', 0, 10000, default_area_thresh)
 
-    lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, 100)
+    lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, default_lower_area_thresh)
 
     # Define the clip limit slider
     clip_limit = st.slider('Clip Limit', 0.0, 10.0, 2.0)
@@ -65,19 +65,19 @@ def page_x(cycle = None):
     df = get_dataframe(id = table_id)
 
     st.subheader('Plot 1')
-    st.write('This plot shows the variation of calculated vs actual area of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
+    st.write('This plot shows the variation of calculated vs actual plage index of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
     fig = plot_time_series(df, return_fig=True)
     st.pyplot(fig)
 
     # Plot 2
     st.subheader('Plot 2')
-    st.write('This plot shows the scatter plot between calculated and actual area of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
+    st.write('This plot shows the scatter plot between calculated and actual plage index of solar plages for images obtained from the Kodaikanal Solar Observatory during Solar Cycle {}'.format(cycle))
     fig2 = plot_scatter_plot(df, return_fig=True)
     st.pyplot(fig2)
 
     # Link to Google Drive folder
-    #st.write('Output images for solar cycle 22 can be found at this', 
-     #        '[Google Drive folder](https://drive.google.com/drive/folders/xxxxxxxxxxxxxx).')
+    st.write('Output images for solar cycle {} can be found at this link:'.format(cycle), 
+             '[Google Drive folder](https://drive.google.com/drive/folders/1nMKew8hG8Eo6Ej1jSz7uSgyiW4C4AzGK?usp=sharing)')
 
 # Define the app
 def app():
