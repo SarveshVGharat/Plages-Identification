@@ -76,8 +76,8 @@ def page_x(cycle = None):
     st.pyplot(fig2)
 
     # Link to Google Drive folder
-    #st.write('Output images for solar cycle 22 can be found at this', 
-     #        '[Google Drive folder](https://drive.google.com/drive/folders/xxxxxxxxxxxxxx).')
+    st.write('Output images for solar cycle {} can be found at this link:'.format(cycle), 
+             '[Google Drive folder](https://drive.google.com/drive/folders/1nMKew8hG8Eo6Ej1jSz7uSgyiW4C4AzGK?usp=sharing)')
 
 # Define the app
 def app():
