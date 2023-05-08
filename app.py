@@ -37,7 +37,7 @@ def page1():
     lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, default_lower_area_thresh)
 
     # Define the clip limit slider
-    clip_limit = st.slider('Clip Limit', 0.0, 10.0, default_clip_limit)
+    clip_limit = st.slider('Clip Limit', 0.0, 10.0, 2.0)
 
     # Check if an image is uploaded
     if uploaded_file is not None:
