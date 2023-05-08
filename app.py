@@ -29,15 +29,15 @@ def page1():
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
     # Define the threshold slider
-    thresh = st.slider('Binary Threshold', 0, 255, 170)
+    thresh = st.slider('Binary Threshold', 0, 255, default_binary_thresh)
 
     # Define the area threshold slider
-    area_thresh = st.slider('Upper Area Threshold', 0, 10000, 1000)
+    area_thresh = st.slider('Upper Area Threshold', 0, 10000, default_area_thresh)
 
-    lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, 100)
+    lower_area_thresh = st.slider('Lower Area Threshold', 0, 500, default_lower_area_thresh)
 
     # Define the clip limit slider
-    clip_limit = st.slider('Clip Limit', 0.0, 10.0, 2.0)
+    clip_limit = st.slider('Clip Limit', 0.0, 10.0, default_clip_limit)
 
     # Check if an image is uploaded
     if uploaded_file is not None:

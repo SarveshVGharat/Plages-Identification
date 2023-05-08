@@ -28,3 +28,8 @@ area_thresh_dict = {
 }
 area_thresh_value  = area_thresh_dict[cycle_id]
 lower_area_thresh_value = None
+
+default_lower_area_thresh = 0
+default_area_thresh = 1000
+default_clip_limit = 2
+default_binary_thresh = 180
