@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Borthakur"
+  given-names: "Abhimanyu"
+  bio: "https://abhimanyu911.github.io/"
+- family-names: "Gharat"
+  given-names: "Sarvesh"
+  bio: "https://sarveshvgharat.github.io/"
+title: "Plage Identification"
+version: 0.0.1
+doi: 10.1093/rasti/rzad027
+date-released: 2023-11-23
+url: "https://github.com/abhimanyu911/redshift-regression-with-uncertainty"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Gharat"
+    given-names: "Sarvesh"
+  - family-names: "Bose"
+    given-names: "Bhaskar"
+  - family-names: "Borthakur"
+    given-names: "Abhimanyu"
+  - family-names: "Mazumder"
+    given-names: "Rakesh"
+  doi: "10.1093/rasti/rzad027"
+  journal: "RAS Techniques and Instruments"
+  month: 07
+  start: 393 # First page number
+  end: 397 # Last page number
+  title: "An image processing approach to identify solar plages observed at 393.37 nm by the Kodaikanal solar observatory"
+  issue: 1
+  volume: 2
+  year: 2023

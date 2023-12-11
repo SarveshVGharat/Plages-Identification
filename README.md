@@ -41,3 +41,24 @@ Web App link : https://abhimanyu911-plages-identification-app-yfyqbq.streamlit.a
 
 ![](./demo.gif)
 
+
+# If you happen to use any of our code, please cite the manuscript as follows:
+
+
+```
+@article{10.1093/rasti/rzad027,
+    author = {Gharat, Sarvesh and Bose, Bhaskar and Borthakur, Abhimanyu and Mazumder, Rakesh},
+    title = "{An image processing approach to identify solar plages observed at 393.37 nm by the Kodaikanal solar observatory}",
+    journal = {RAS Techniques and Instruments},
+    volume = {2},
+    number = {1},
+    pages = {393-397},
+    year = {2023},
+    month = {07},
+    abstract = "{Solar plages, which are bright regions on the Sun’s surface, are an important indicator of solar activity. In this study, we propose an automated algorithm for identifying solar plages in Ca-K wavelength solar data obtained from the Kodaikanal Solar Observatory. The algorithm successfully annotates all visually identifiable plages in an image and outputs the corresponding calculated plage index. We perform a time series analysis of the plage index (rolling mean) across multiple solar cycles to test the algorithm’s reliability and robustness. The results show a strong correlation between the calculated plage index and those reported in a previous study. The correlation coefficients obtained for all the solar cycles are higher than 0.90, indicating the reliability of the model. We also suggest that adjusting the hyperparameters appropriately for a specific image using our web-based app can increase the model’s efficiency. The algorithm has been deployed on the Streamlit Community Cloud platform, where users can upload images and customize the hyperparameters for desired results. The input data used in this study is freely available from the KSO data archive, and the code and the generated data are publicly available on our GitHub repository. Our proposed algorithm provides an efficient and reliable method for identifying solar plages, which can aid the study of solar activity and its impact on the Earth’s climate, technology, and space weather.}",
+    issn = {2752-8200},
+    doi = {10.1093/rasti/rzad027},
+    url = {https://doi.org/10.1093/rasti/rzad027},
+    eprint = {https://academic.oup.com/rasti/article-pdf/2/1/393/50930555/rzad027.pdf},
+}
+```

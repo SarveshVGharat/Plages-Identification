@@ -17,7 +17,16 @@ from astropy.time import Time
 #try keeping lower limit as well
 #add functionality to do images in bulk
 #take a look at those papers mentioned by reviewer 2
-def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh = None, input_image = None, lower_area_thresh = None, override = False):
+def algorithm(
+        input_file =  None, 
+        thresh = None, 
+        clip_limit = None, 
+        area_thresh = None, 
+        input_image = None, 
+        lower_area_thresh = None, 
+        override = False,
+        get_segmented_image = False
+    ):
 
     date_time = return_date_and_time(file = input_file)
     date, time = date_time.split(" ")
@@ -125,7 +134,10 @@ def algorithm(input_file =  None, thresh = None, clip_limit = None, area_thresh 
     cv2.drawContours(input_image_rgb, contours, -1, (0, 0, 255), 2)
 
     #input_image_rgb = input_image = cv2.copyMakeBorder(input_image_rgb,padding,padding,padding,padding,cv2.BORDER_CONSTANT,value=0)
-    return corrected_area, area, input_image_rgb
+    if not(get_segmented_image):
+        return corrected_area, area, input_image_rgb
+    else:
+        return corrected_area, area, output_image
 
 def return_solar_circumference_contour(image = None):
 
