@@ -45,6 +45,9 @@ Web App link : https://abhimanyu911-plages-identification-app-yfyqbq.streamlit.a
 # If you happen to use any of our code, please cite the manuscript as follows:
 
 
+[Manuscript](https://academic.oup.com/rasti/article/2/1/393/7223482)
+
+
 ```
 @article{10.1093/rasti/rzad027,
     author = {Gharat, Sarvesh and Bose, Bhaskar and Borthakur, Abhimanyu and Mazumder, Rakesh},
